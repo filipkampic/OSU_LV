@@ -8,25 +8,30 @@ Koliko je rijeci koje se pojavljuju samo jednom u datoteci? Ispišite ih.
 import string
 
 def brojanje_rijeci(filename):
-    broj_rijeci = {}
-
     try:
-        with open(filename, "r") as file:
+        with open(filename, "r", encoding="utf-8") as file:
+            rijeci = []
             for line in file:
-                rijeci = line.split()
-                rijeci = [rijec.strip('.,!;:').lower() for rijec in rijeci]
-                for rijec in rijeci:
-                    if rijec in broj_rijeci:
-                        broj_rijeci[rijec] += 1
-                    else:
-                        broj_rijeci[rijec] = 1
+                line = line.rstrip().split(" ")
+                rijeci += line
 
-        jedinstvene_rijeci = [rijec for rijec, broj in broj_rijeci.items() if broj == 1]
-        print(f"Broj riječi koje se pojavljuju samo jedanput: {len(broj_rijeci)}")
-        print(f"Te riječi su: {jedinstvene_rijeci}")
+        jedinstvene_rijeci = list(set(rijeci))
+        broj_rijeci = {}
+        
+        for rijec in jedinstvene_rijeci:
+            count = 0
+            for r in rijeci:
+                if r == rijec:
+                    count += 1
+            broj_rijeci[rijec] = count
+
+        rijeci_koje_se_pojavljuju_jednom = [rijec for rijec, broj in broj_rijeci.items() if broj == 1]
+
+        print(f"Riječi: {rijeci_koje_se_pojavljuju_jednom}")
+        print(f"Broj riječi: {len(rijeci_koje_se_pojavljuju_jednom)}")
 
     except FileNotFoundError:
-        print(f"Greška: Datoteka '{file}' nije pronađena.")
+        print(f"Greška: Datoteka '{filename}' nije pronađena.")
         return {}
     return broj_rijeci
 
