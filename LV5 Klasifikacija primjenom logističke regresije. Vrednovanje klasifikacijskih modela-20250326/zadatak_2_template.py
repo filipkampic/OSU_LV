@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import ConfusionMatrixDisplay, classification_report, confusion_matrix, accuracy_score
 from sklearn.model_selection import train_test_split
 
 labels= {0:'Adelie', 1:'Chinstrap', 2:'Gentoo'}
@@ -67,16 +68,47 @@ y = df[output_variable].to_numpy()
 # podjela train/test
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state = 123)
 
-# a) 
+# a)
+train_classes, train_counts = np.unique(y_train, return_counts=True)
+test_classes, test_counts = np.unique(y_test, return_counts=True)
+x = np.arange(len(train_classes))
+width = 0.35
 
+plt.bar(x - width/2, train_counts, width, label="Skup za učenje", color="skyblue")
+plt.bar(x + width/2, test_counts, width, label="Skup za testiranje", color="orange")
+plt.xticks(x, [labels[i] for i in x])
+plt.xlabel("Vrsta pingvina")
+plt.ylabel("Broj primjera")
+plt.title("Broj primjera po klasi u skupu za učenje i testiranje")
+plt.legend()
+plt.show()
 
 # b)
-LogRegression_model = LogisticRegression(multi_class='ovr')
-LogRegression_model.fit(X_train, y_train)
+logRegression_model = LogisticRegression(multi_class='ovr', max_iter=120)
+logRegression_model.fit(X_train, y_train.ravel())
 
 # c)
-print("Presjek: ", LogRegression_model.intercept_)
-print("Koeficijenti:\n", LogRegression_model.coef_)
+print("Presjek:", logRegression_model.intercept_)
+print("Koeficijenti:\n", logRegression_model.coef_)
 
 # d)
+plot_decision_regions(X_train, y_train.ravel(), classifier=logRegression_model)
+plt.xlabel("Duljina kljuna (mm)")
+plt.ylabel("Duljina peraje (mm)")
+plt.title("Granice odluke – skup za učenje")
+plt.legend()
+plt.show()
 
+# e)
+y_test_p = logRegression_model.predict(X_test)
+
+cm = confusion_matrix(y_test.ravel(), y_test_p)
+disp = ConfusionMatrixDisplay(cm, display_labels=labels.values())
+disp.plot()
+plt.title("Matrica zabune – skup za testiranje")
+plt.show()
+
+acc = accuracy_score(y_test.ravel(), y_test_p)
+print(f"Točnost: {acc:.2f}\n")
+
+print(classification_report(y_test.ravel(), y_test_p, target_names=labels.values()))
